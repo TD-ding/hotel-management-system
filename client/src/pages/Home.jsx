@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import Loading from '../components/Loading.jsx';
 import { typeLabel } from '../constants';
 import { theme, layout } from '../theme';
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/rooms?available=1').then(({ data }) => setFeatured(data.slice(0, 3)));
+    api.get('/rooms?available=1').then(({ data }) => { setFeatured(data.slice(0, 3)); setLoading(false); });
   }, []);
 
   return (
@@ -23,23 +25,25 @@ export default function Home() {
 
       <section style={styles.section}>
         <h2 style={styles.sectionTitle}>精选房型</h2>
-        <div style={styles.grid}>
-          {featured.map(room => (
-            <div key={room.id} style={styles.card}>
-              <div style={styles.cardImg}>
-                <span style={styles.cardType}>{typeLabel(room.type)}</span>
-              </div>
-              <div style={styles.cardBody}>
-                <h3>{room.name}</h3>
-                <p style={styles.cardDesc}>{room.description}</p>
-                <div style={styles.cardFooter}>
-                  <span style={styles.price}>¥{room.price}<small>/晚</small></span>
-                  <Link to={`/rooms/${room.id}`} style={styles.cardBtn}>查看详情</Link>
+        {loading ? <Loading /> : (
+          <div style={styles.grid}>
+            {featured.map(room => (
+              <div key={room.id} className="room-card" style={styles.card}>
+                <div style={room.image ? { ...styles.cardImg, backgroundImage: `url(${room.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : styles.cardImg}>
+                  <span style={styles.cardType}>{typeLabel(room.type)}</span>
+                </div>
+                <div style={styles.cardBody}>
+                  <h3>{room.name}</h3>
+                  <p style={styles.cardDesc}>{room.description}</p>
+                  <div style={styles.cardFooter}>
+                    <span style={styles.price}>¥{room.price}<small>/晚</small></span>
+                    <Link to={`/rooms/${room.id}`} style={styles.cardBtn}>查看详情</Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section style={styles.features}>

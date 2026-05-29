@@ -2,41 +2,50 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../auth.jsx';
+import { useToast } from '../components/Toast.jsx';
+import Loading from '../components/Loading.jsx';
 import { typeLabel } from '../constants';
 import { theme, layout } from '../theme';
+import { calcNights } from '../utils';
 
 export default function RoomDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [room, setRoom] = useState(null);
   const [booking, setBooking] = useState({ check_in: '', check_out: '', guests: 1 });
-  const [msg, setMsg] = useState('');
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.get(`/rooms/${id}`).then(({ data }) => setRoom(data));
   }, [id]);
 
+  const nights = calcNights(booking.check_in, booking.check_out);
+  const totalPrice = room && nights > 0 ? room.price * nights : 0;
+
   const handleBook = async (e) => {
     e.preventDefault();
-    if (!user) { navigate('/login'); return; }
-    setError(''); setMsg('');
+    if (!user) { navigate('/login', { state: { from: location.pathname } }); return; }
+    setLoading(true);
     try {
       const { data } = await api.post('/bookings', { room_id: id, ...booking });
-      setMsg(`预订成功！共 ${data.nights} 晚，总价 ¥${data.total_price}`);
+      toast.success(`预订成功！共 ${data.nights} 晚，总价 ¥${data.total_price}`);
+      navigate('/profile');
     } catch (err) {
-      setError(err.response?.data?.error || '预订失败');
+      toast.error(err.response?.data?.error || '预订失败');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!room) return <div style={styles.loading}>加载中...</div>;
+  if (!room) return <Loading />;
 
   return (
     <div style={styles.page}>
-      <div style={styles.layout}>
+      <div className="detail-layout" style={styles.layout}>
         <div style={styles.main}>
-          <div style={styles.imgArea}>
+          <div style={room.image ? { ...styles.imgArea, backgroundImage: `url(${room.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : styles.imgArea}>
             <span style={styles.typeBadge}>{typeLabel(room.type)}</span>
           </div>
           <h1 style={styles.name}>{room.name}</h1>
@@ -56,7 +65,7 @@ export default function RoomDetail() {
             <div style={styles.infoItem}><span style={styles.infoLabel}>状态</span><span style={room.available ? styles.available : styles.unavailable}>{room.available ? '可预订' : '已满'}</span></div>
           </div>
         </div>
-        <div style={styles.sidebar}>
+        <div className="detail-sidebar" style={styles.sidebar}>
           <div style={styles.bookingCard}>
             <h3 style={styles.bookingTitle}>预订此房间</h3>
             <div style={styles.priceBig}>¥{room.price}<small>/晚</small></div>
@@ -67,12 +76,16 @@ export default function RoomDetail() {
               <input type="date" required value={booking.check_out} onChange={e => setBooking(b => ({ ...b, check_out: e.target.value }))} style={styles.input} min={booking.check_in || new Date().toISOString().split('T')[0]} />
               <label style={styles.label}>入住人数</label>
               <input type="number" min={1} max={room.capacity} value={booking.guests} onChange={e => setBooking(b => ({ ...b, guests: Number(e.target.value) }))} style={styles.input} />
-              <button type="submit" style={styles.bookBtn} disabled={!room.available}>
-                {room.available ? '立即预订' : '暂不可订'}
+              {nights > 0 && (
+                <div style={styles.summary}>
+                  <span>{nights} 晚</span>
+                  <span style={styles.summaryPrice}>¥{totalPrice}</span>
+                </div>
+              )}
+              <button type="submit" style={styles.bookBtn} disabled={!room.available || loading}>
+                {loading ? '提交中...' : room.available ? '立即预订' : '暂不可订'}
               </button>
             </form>
-            {msg && <p style={styles.success}>{msg}</p>}
-            {error && <p style={styles.error}>{error}</p>}
           </div>
         </div>
       </div>
@@ -103,8 +116,7 @@ const styles = {
   priceBig: { fontSize: 32, fontWeight: 700, color: theme.accent, marginBottom: 20 },
   label: { display: 'block', fontSize: 13, color: theme.textLight, marginBottom: 4, marginTop: 12 },
   input: { width: '100%', padding: '8px 12px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
-  bookBtn: { width: '100%', padding: '12px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 20 },
-  success: { color: theme.success, marginTop: 12, fontSize: 14 },
-  error: { color: theme.danger, marginTop: 12, fontSize: 14 },
-  loading: { textAlign: 'center', padding: 60, color: theme.textMuted },
+  summary: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', marginTop: 12, borderTop: `1px solid ${theme.border}`, fontSize: 15 },
+  summaryPrice: { color: theme.accent, fontWeight: 700, fontSize: 20 },
+  bookBtn: { width: '100%', padding: '12px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 12 },
 };
