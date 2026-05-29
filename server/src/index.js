@@ -1,11 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
 const authRoutes = require('./routes/auth');
 const roomRoutes = require('./routes/rooms');
 const bookingRoutes = require('./routes/bookings');
 const userRoutes = require('./routes/users');
 const statsRoutes = require('./routes/stats');
+const notificationRoutes = require('./routes/notifications');
+const reviewRoutes = require('./routes/reviews');
+const exportRoutes = require('./routes/export');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,11 +23,24 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+const upload = multer({
+  dest: path.join(__dirname, '..', 'uploads'),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请选择图片' });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/export', exportRoutes);
 
 app.use((err, req, res, _next) => {
   console.error(err.stack);

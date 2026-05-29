@@ -1,13 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { theme, layout } from '../theme';
+import api from '../api';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      api.get('/notifications/my/unread').then(({ data }) => setUnread(data.count)).catch(() => {});
+      const timer = setInterval(() => {
+        api.get('/notifications/my/unread').then(({ data }) => setUnread(data.count)).catch(() => {});
+      }, 30000);
+      return () => clearInterval(timer);
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -31,7 +43,10 @@ export default function Navbar() {
           <Link to="/rooms" style={styles.link} onClick={close}>客房</Link>
           {user ? (
             <>
-              <Link to="/profile" style={styles.link} onClick={close}>我的预订</Link>
+              <Link to="/profile" style={styles.link} onClick={close}>个人中心</Link>
+              <Link to="/notifications" style={styles.notifLink} onClick={close}>
+                通知{unread > 0 && <span style={styles.badge}>{unread > 99 ? '99+' : unread}</span>}
+              </Link>
               {user.role === 'admin' && <Link to="/admin" style={styles.link} onClick={close}>管理面板</Link>}
               <span style={styles.user}>{user.username}</span>
               <button onClick={handleLogout} style={styles.btn}>退出</button>
@@ -55,6 +70,8 @@ const styles = {
   bar: { display: 'block', width: 24, height: 2, background: '#ccc', borderRadius: 1, transition: 'all 0.3s' },
   links: { display: 'flex', alignItems: 'center', gap: 20 },
   link: { color: '#ccc', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' },
+  notifLink: { color: '#ccc', textDecoration: 'none', fontSize: 14, position: 'relative' },
+  badge: { position: 'absolute', top: -8, right: -12, background: theme.danger, color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 8, minWidth: 16, textAlign: 'center' },
   linkBtn: { color: theme.primary, background: theme.accent, padding: '6px 16px', borderRadius: 4, textDecoration: 'none', fontSize: 14, fontWeight: 500 },
   user: { color: theme.accent, fontSize: 14 },
   btn: { background: 'transparent', color: '#ccc', border: '1px solid #555', padding: '4px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 13 },

@@ -13,6 +13,11 @@ export default function Dashboard() {
     api.get('/stats').then(({ data }) => setStats(data));
   }, []);
 
+  const csvUrl = (type) => {
+    const token = localStorage.getItem('token');
+    return `/api/export/${type}?token=${token}`;
+  };
+
   if (!stats) return <Loading />;
 
   return (
@@ -33,6 +38,8 @@ export default function Dashboard() {
           <div style={styles.barRow}>
             <Bar label="已确认" value={stats.confirmedBookings} color={theme.success} />
             <Bar label="待确认" value={stats.pendingBookings} color={theme.warning} />
+            <Bar label="已入住" value={stats.checkedInBookings || 0} color={theme.info} />
+            <Bar label="已退房" value={stats.checkedOutBookings || 0} color="#6c757d" />
             <Bar label="已取消" value={stats.cancelledBookings} color={theme.danger} />
           </div>
         </div>
@@ -70,6 +77,15 @@ export default function Dashboard() {
         <Link to="/admin/rooms" style={styles.qlBtn}>管理房间</Link>
         <Link to="/admin/bookings" style={styles.qlBtn}>管理预订</Link>
         <Link to="/admin/users" style={styles.qlBtn}>管理用户</Link>
+      </div>
+
+      <div style={styles.exportSection}>
+        <h3 style={styles.subTitle}>数据导出</h3>
+        <div style={styles.exportLinks}>
+          <a href={csvUrl('bookings')} style={styles.exportBtn}>导出预订CSV</a>
+          <a href={csvUrl('users')} style={styles.exportBtn}>导出用户CSV</a>
+          <a href={csvUrl('rooms')} style={styles.exportBtn}>导出房间CSV</a>
+        </div>
       </div>
     </div>
   );
@@ -113,6 +129,9 @@ const styles = {
   barValue: { width: 30, fontSize: 13, fontWeight: 600 },
   revRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
   table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 20 },
-  quickLinks: { display: 'flex', gap: 12, flexWrap: 'wrap' },
+  quickLinks: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 30 },
   qlBtn: { padding: '10px 24px', background: theme.primary, color: theme.accent, borderRadius: 4, textDecoration: 'none', fontWeight: 600 },
+  exportSection: { marginTop: 10 },
+  exportLinks: { display: 'flex', gap: 12, flexWrap: 'wrap' },
+  exportBtn: { padding: '8px 20px', background: theme.success, color: '#fff', borderRadius: 4, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
 };
