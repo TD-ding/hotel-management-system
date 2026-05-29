@@ -1,13 +1,13 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import { theme, layout } from '../theme';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    window.location.href = '/';
   };
 
   return (
@@ -37,12 +37,12 @@ export default function Navbar() {
 }
 
 const styles = {
-  nav: { background: '#1a1a2e', padding: '0 20px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' },
-  container: { maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 },
-  logo: { color: '#e6b800', fontSize: 22, fontWeight: 700, textDecoration: 'none', letterSpacing: 2 },
+  nav: { background: theme.primary, padding: '0 20px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 10px rgba(0,0,0,0.3)' },
+  container: { maxWidth: layout.maxWidth, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 },
+  logo: { color: theme.accent, fontSize: 22, fontWeight: 700, textDecoration: 'none', letterSpacing: 2 },
   links: { display: 'flex', alignItems: 'center', gap: 20 },
   link: { color: '#ccc', textDecoration: 'none', fontSize: 14, transition: 'color 0.2s' },
-  linkBtn: { color: '#1a1a2e', background: '#e6b800', padding: '6px 16px', borderRadius: 4, textDecoration: 'none', fontSize: 14, fontWeight: 500 },
-  user: { color: '#e6b800', fontSize: 14 },
+  linkBtn: { color: theme.primary, background: theme.accent, padding: '6px 16px', borderRadius: 4, textDecoration: 'none', fontSize: 14, fontWeight: 500 },
+  user: { color: theme.accent, fontSize: 14 },
   btn: { background: 'transparent', color: '#ccc', border: '1px solid #555', padding: '4px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 13 },
 };

@@ -1,28 +1,25 @@
 const db = require('./db');
 const bcrypt = require('bcryptjs');
 
-const clean = db.transaction(() => {
-  db.prepare('DELETE FROM bookings').run();
-  db.prepare('DELETE FROM rooms').run();
-  db.prepare('DELETE FROM users').run();
-});
+async function seed() {
+  const clean = db.transaction(() => {
+    db.prepare('DELETE FROM bookings').run();
+    db.prepare('DELETE FROM rooms').run();
+    db.prepare('DELETE FROM users').run();
+  });
 
-const seed = db.transaction(() => {
   clean();
 
-  // Admin user
-  const adminHash = bcrypt.hashSync('admin123', 10);
+  const adminHash = await bcrypt.hash('admin123', 10);
   db.prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)')
     .run('admin', 'admin@hotel.com', adminHash, 'admin');
 
-  // Demo users
-  const userHash = bcrypt.hashSync('user123', 10);
+  const userHash = await bcrypt.hash('user123', 10);
   db.prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)')
     .run('demo', 'demo@example.com', userHash, 'user');
   db.prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)')
     .run('john', 'john@example.com', userHash, 'user');
 
-  // Rooms
   const rooms = [
     { name: '豪华大床房', type: 'deluxe', price: 588, capacity: 2, description: '宽敞舒适的大床房，配备高品质床品和现代化浴室，城市景观尽收眼底。', image: '/images/deluxe.jpg', amenities: 'WiFi,空调,迷你吧,保险箱,浴袍' },
     { name: '标准双床房', type: 'standard', price: 388, capacity: 2, description: '温馨双床房，适合商务出行或朋友结伴，设施齐全。', image: '/images/standard.jpg', amenities: 'WiFi,空调,电视,淋浴' },
@@ -37,7 +34,6 @@ const seed = db.transaction(() => {
   );
   rooms.forEach(r => insertRoom.run(r.name, r.type, r.price, r.capacity, r.description, r.image, r.amenities));
 
-  // Bookings
   const insertBooking = db.prepare(
     'INSERT INTO bookings (user_id, room_id, check_in, check_out, guests, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
@@ -47,6 +43,6 @@ const seed = db.transaction(() => {
   insertBooking.run(3, 5, '2025-07-01', '2025-07-05', 4, 2752, 'cancelled');
 
   console.log('Seed data inserted successfully!');
-});
+}
 
-seed();
+seed().catch(err => { console.error(err); process.exit(1); });

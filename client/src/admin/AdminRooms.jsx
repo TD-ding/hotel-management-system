@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { typeLabel } from '../constants';
+import { theme, layout } from '../theme';
 
 const emptyRoom = { name: '', type: 'standard', price: '', capacity: '', description: '', amenities: '', available: 1 };
 
@@ -95,22 +97,20 @@ export default function AdminRooms() {
   );
 }
 
-function typeLabel(t) { return { standard: '标准', deluxe: '豪华', suite: '套房', presidential: '总统套房', family: '家庭', business: '商务' }[t] || t; }
-
 const styles = {
-  page: { maxWidth: 1200, margin: '0 auto', padding: '30px 20px' },
+  page: { maxWidth: layout.maxWidth, margin: '0 auto', padding: layout.pagePadding },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: 700, color: '#1a1a2e', margin: 0 },
-  backBtn: { color: '#e6b800', textDecoration: 'none', fontWeight: 500 },
-  formCard: { background: '#fff', padding: 20, borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 20 },
+  title: { fontSize: 28, fontWeight: 700, color: theme.primary, margin: 0 },
+  backBtn: { color: theme.accent, textDecoration: 'none', fontWeight: 500 },
+  formCard: { background: theme.white, padding: 20, borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 20 },
   subTitle: { margin: '0 0 16px', fontSize: 18, fontWeight: 600 },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  label: { display: 'block', fontSize: 13, color: '#666', marginBottom: 4 },
-  input: { width: '100%', padding: '8px 10px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
-  btn: { padding: '8px 20px', background: '#e6b800', color: '#1a1a2e', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 },
-  cancelBtn: { padding: '8px 16px', background: '#fff', color: '#666', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer' },
-  msg: { color: '#27ae60', fontSize: 14, marginTop: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  editBtn: { padding: '4px 10px', background: '#3498db', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
-  delBtn: { padding: '4px 10px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
+  label: { display: 'block', fontSize: 13, color: theme.textLight, marginBottom: 4 },
+  input: { width: '100%', padding: '8px 10px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
+  btn: { padding: '8px 20px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 },
+  cancelBtn: { padding: '8px 16px', background: theme.white, color: theme.textLight, border: `1px solid ${theme.border}`, borderRadius: 4, cursor: 'pointer' },
+  msg: { color: theme.success, fontSize: 14, marginTop: 8 },
+  table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  editBtn: { padding: '4px 10px', background: theme.info, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
+  delBtn: { padding: '4px 10px', background: theme.danger, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
 };

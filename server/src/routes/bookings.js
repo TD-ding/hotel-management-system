@@ -24,11 +24,21 @@ router.get('/my', auth, (req, res) => {
   res.json(bookings);
 });
 
+function validateDates(check_in, check_out) {
+  if (new Date(check_out) <= new Date(check_in)) {
+    return '退房日期必须晚于入住日期';
+  }
+  return null;
+}
+
 router.post('/', auth, (req, res) => {
   const { room_id, check_in, check_out, guests } = req.body;
   if (!room_id || !check_in || !check_out) {
     return res.status(400).json({ error: '请填写所有必填字段' });
   }
+
+  const dateErr = validateDates(check_in, check_out);
+  if (dateErr) return res.status(400).json({ error: dateErr });
 
   const room = db.prepare('SELECT * FROM rooms WHERE id = ? AND available = 1').get(room_id);
   if (!room) return res.status(404).json({ error: '房间不存在或不可用' });
@@ -53,19 +63,46 @@ router.put('/:id', auth, (req, res) => {
   const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
   if (!booking) return res.status(404).json({ error: '预订不存在' });
 
-  if (req.user.role !== 'admin' && booking.user_id !== req.user.id) {
-    return res.status(403).json({ error: '无权操作此预订' });
+  const { status, check_in, check_out, guests } = req.body;
+
+  // Only admin can change status to confirmed
+  if (status === 'confirmed' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: '只有管理员才能确认预订' });
   }
 
-  const { status, check_in, check_out, guests } = req.body;
   if (status && !['pending', 'confirmed', 'cancelled'].includes(status)) {
     return res.status(400).json({ error: '无效的状态' });
   }
 
+  // Non-admin users can only cancel their own bookings
+  if (req.user.role !== 'admin' && booking.user_id !== req.user.id) {
+    return res.status(403).json({ error: '无权操作此预订' });
+  }
+
+  // Non-admin can only cancel, not change other fields
+  if (req.user.role !== 'admin' && status !== 'cancelled') {
+    return res.status(403).json({ error: '用户只能取消预订，如需修改请联系管理员' });
+  }
+
+  const newCheckIn = check_in ?? booking.check_in;
+  const newCheckOut = check_out ?? booking.check_out;
+
+  const dateErr = validateDates(newCheckIn, newCheckOut);
+  if (dateErr) return res.status(400).json({ error: dateErr });
+
+  // Check date conflict if dates changed
+  if ((check_in && check_in !== booking.check_in) || (check_out && check_out !== booking.check_out)) {
+    const conflict = db.prepare(
+      `SELECT id FROM bookings WHERE room_id = ? AND status != 'cancelled'
+       AND id != ? AND check_in < ? AND check_out > ?`
+    ).get(booking.room_id, booking.id, newCheckOut, newCheckIn);
+    if (conflict) return res.status(409).json({ error: '修改后的日期与已有预订冲突' });
+  }
+
   db.prepare('UPDATE bookings SET status=?, check_in=?, check_out=?, guests=? WHERE id=?').run(
     status ?? booking.status,
-    check_in ?? booking.check_in,
-    check_out ?? booking.check_out,
+    newCheckIn,
+    newCheckOut,
     guests ?? booking.guests,
     req.params.id
   );

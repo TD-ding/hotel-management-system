@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { theme, layout } from '../theme';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -74,16 +75,16 @@ export default function AdminUsers() {
 }
 
 const styles = {
-  page: { maxWidth: 1200, margin: '0 auto', padding: '30px 20px' },
+  page: { maxWidth: layout.maxWidth, margin: '0 auto', padding: layout.pagePadding },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: 700, color: '#1a1a2e', margin: 0 },
-  backBtn: { color: '#e6b800', textDecoration: 'none', fontWeight: 500 },
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  input: { padding: '6px 8px', border: '1px solid #ddd', borderRadius: 3, fontSize: 13, width: '100%', boxSizing: 'border-box' },
-  adminBadge: { background: '#e6b800', color: '#1a1a2e', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 },
-  userBadge: { background: '#e8e8e8', color: '#666', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
-  editBtn: { padding: '4px 10px', background: '#3498db', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
-  delBtn: { padding: '4px 10px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
-  saveBtn: { padding: '4px 10px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
-  cancelBtn: { padding: '4px 10px', background: '#fff', color: '#666', border: '1px solid #ddd', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
+  title: { fontSize: 28, fontWeight: 700, color: theme.primary, margin: 0 },
+  backBtn: { color: theme.accent, textDecoration: 'none', fontWeight: 500 },
+  table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  input: { padding: '6px 8px', border: `1px solid ${theme.border}`, borderRadius: 3, fontSize: 13, width: '100%', boxSizing: 'border-box' },
+  adminBadge: { background: theme.accent, color: theme.primary, padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 },
+  userBadge: { background: '#e8e8e8', color: theme.textLight, padding: '2px 8px', borderRadius: 4, fontSize: 12 },
+  editBtn: { padding: '4px 10px', background: theme.info, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
+  delBtn: { padding: '4px 10px', background: theme.danger, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
+  saveBtn: { padding: '4px 10px', background: theme.success, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
+  cancelBtn: { padding: '4px 10px', background: theme.white, color: theme.textLight, border: `1px solid ${theme.border}`, borderRadius: 3, cursor: 'pointer', fontSize: 12 },
 };

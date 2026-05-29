@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import { theme } from '../theme';
 
 export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -38,13 +39,13 @@ export default function Login() {
 }
 
 const styles = {
-  page: { minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f9fa' },
-  card: { background: '#fff', padding: 40, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400 },
-  title: { margin: '0 0 24px', textAlign: 'center', fontSize: 24, fontWeight: 600, color: '#1a1a2e' },
-  label: { display: 'block', fontSize: 13, color: '#666', marginBottom: 4, marginTop: 14 },
-  input: { width: '100%', padding: '10px 12px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
-  btn: { width: '100%', padding: '12px', background: '#e6b800', color: '#1a1a2e', border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 20 },
-  error: { color: '#e74c3c', fontSize: 14, marginTop: 8 },
-  footer: { textAlign: 'center', marginTop: 16, color: '#999', fontSize: 14 },
-  link: { color: '#e6b800', textDecoration: 'none', fontWeight: 500 },
+  page: { minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg },
+  card: { background: theme.white, padding: 40, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400 },
+  title: { margin: '0 0 24px', textAlign: 'center', fontSize: 24, fontWeight: 600, color: theme.primary },
+  label: { display: 'block', fontSize: 13, color: theme.textLight, marginBottom: 4, marginTop: 14 },
+  input: { width: '100%', padding: '10px 12px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
+  btn: { width: '100%', padding: '12px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 20 },
+  error: { color: theme.danger, fontSize: 14, marginTop: 8 },
+  footer: { textAlign: 'center', marginTop: 16, color: theme.textMuted, fontSize: 14 },
+  link: { color: theme.accent, textDecoration: 'none', fontWeight: 500 },
 };

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { statusLabel, statusBadgeStyle } from '../constants';
+import { theme, layout } from '../theme';
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
@@ -42,8 +44,8 @@ export default function AdminBookings() {
             <tr key={b.id}>
               <td>{b.id}</td><td>{b.username}</td><td>{b.room_name}</td>
               <td>{b.check_in}</td><td>{b.check_out}</td><td>{b.guests}</td>
-              <td style={{ color: '#e6b800', fontWeight: 600 }}>¥{b.total_price}</td>
-              <td><span style={statusBadge(b.status)}>{statusLabel(b.status)}</span></td>
+              <td style={{ color: theme.accent, fontWeight: 600 }}>¥{b.total_price}</td>
+              <td><span style={statusBadgeStyle(b.status)}>{statusLabel(b.status)}</span></td>
               <td>
                 {b.status === 'pending' && (
                   <button onClick={() => handleStatus(b.id, 'confirmed')} style={styles.confirmBtn}>确认</button>
@@ -62,25 +64,17 @@ export default function AdminBookings() {
   );
 }
 
-function statusLabel(s) { return { pending: '待确认', confirmed: '已确认', cancelled: '已取消' }[s] || s; }
-function statusBadge(s) {
-  const base = { padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 };
-  if (s === 'confirmed') return { ...base, background: '#d4edda', color: '#155724' };
-  if (s === 'cancelled') return { ...base, background: '#f8d7da', color: '#721c24' };
-  return { ...base, background: '#fff3cd', color: '#856404' };
-}
-
 const styles = {
-  page: { maxWidth: 1200, margin: '0 auto', padding: '30px 20px' },
+  page: { maxWidth: layout.maxWidth, margin: '0 auto', padding: layout.pagePadding },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: 700, color: '#1a1a2e', margin: 0 },
-  backBtn: { color: '#e6b800', textDecoration: 'none', fontWeight: 500 },
+  title: { fontSize: 28, fontWeight: 700, color: theme.primary, margin: 0 },
+  backBtn: { color: theme.accent, textDecoration: 'none', fontWeight: 500 },
   filterBar: { display: 'flex', gap: 8, marginBottom: 16 },
-  filterBtn: { padding: '6px 14px', border: '1px solid #ddd', background: '#fff', borderRadius: 4, cursor: 'pointer', fontSize: 13, color: '#666' },
-  activeBtn: { padding: '6px 14px', border: '1px solid #e6b800', background: '#e6b800', borderRadius: 4, cursor: 'pointer', fontSize: 13, color: '#1a1a2e', fontWeight: 600 },
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  confirmBtn: { padding: '4px 10px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
-  cancelBtn: { padding: '4px 10px', background: '#f39c12', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
-  delBtn: { padding: '4px 10px', background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
-  empty: { textAlign: 'center', color: '#999', padding: 40 },
+  filterBtn: { padding: '6px 14px', border: `1px solid ${theme.border}`, background: theme.white, borderRadius: 4, cursor: 'pointer', fontSize: 13, color: theme.textLight },
+  activeBtn: { padding: '6px 14px', border: `1px solid ${theme.accent}`, background: theme.accent, borderRadius: 4, cursor: 'pointer', fontSize: 13, color: theme.primary, fontWeight: 600 },
+  table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  confirmBtn: { padding: '4px 10px', background: theme.success, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
+  cancelBtn: { padding: '4px 10px', background: theme.warning, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
+  delBtn: { padding: '4px 10px', background: theme.danger, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
+  empty: { textAlign: 'center', color: theme.textMuted, padding: 40 },
 };
