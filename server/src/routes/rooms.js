@@ -5,25 +5,39 @@ const { auth, adminOnly } = require('../middleware');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { type, minPrice, maxPrice, capacity, available } = req.query;
+  const { type, minPrice, maxPrice, capacity, available, search, page = 1, limit = 50 } = req.query;
+  const offset = (Number(page) - 1) * Number(limit);
   let sql = 'SELECT * FROM rooms WHERE 1=1';
+  let countSql = 'SELECT COUNT(*) as total FROM rooms WHERE 1=1';
   const params = [];
+  const countParams = [];
 
-  if (type) { sql += ' AND type = ?'; params.push(type); }
-  if (minPrice) { sql += ' AND price >= ?'; params.push(Number(minPrice)); }
-  if (maxPrice) { sql += ' AND price <= ?'; params.push(Number(maxPrice)); }
-  if (capacity) { sql += ' AND capacity >= ?'; params.push(Number(capacity)); }
-  if (available !== undefined) { sql += ' AND available = ?'; params.push(Number(available)); }
+  if (type) { sql += ' AND type = ?'; countSql += ' AND type = ?'; params.push(type); countParams.push(type); }
+  if (minPrice) { sql += ' AND price >= ?'; countSql += ' AND price >= ?'; params.push(Number(minPrice)); countParams.push(Number(minPrice)); }
+  if (maxPrice) { sql += ' AND price <= ?'; countSql += ' AND price <= ?'; params.push(Number(maxPrice)); countParams.push(Number(maxPrice)); }
+  if (capacity) { sql += ' AND capacity >= ?'; countSql += ' AND capacity >= ?'; params.push(Number(capacity)); countParams.push(Number(capacity)); }
+  if (available !== undefined) { sql += ' AND available = ?'; countSql += ' AND available = ?'; params.push(Number(available)); countParams.push(Number(available)); }
+  if (search) { sql += ' AND name LIKE ?'; countSql += ' AND name LIKE ?'; params.push(`%${search}%`); countParams.push(`%${search}%`); }
 
-  sql += ' ORDER BY price ASC';
+  const total = db.prepare(countSql).get(...countParams).total;
+  sql += ' ORDER BY price ASC LIMIT ? OFFSET ?';
+  params.push(Number(limit), offset);
+
+  // Add average rating to each room
   const rooms = db.prepare(sql).all(...params);
-  res.json(rooms);
+  const roomsWithRating = rooms.map(room => {
+    const avg = db.prepare('SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE room_id = ?').get(room.id);
+    return { ...room, avgRating: avg.avg ? Number(avg.avg).toFixed(1) : null, reviewCount: avg.count };
+  });
+
+  res.json({ data: roomsWithRating, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
 });
 
 router.get('/:id', (req, res) => {
   const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id);
   if (!room) return res.status(404).json({ error: '房间不存在' });
-  res.json(room);
+  const avg = db.prepare('SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE room_id = ?').get(room.id);
+  res.json({ ...room, avgRating: avg.avg ? Number(avg.avg).toFixed(1) : null, reviewCount: avg.count });
 });
 
 router.post('/', auth, adminOnly, (req, res) => {

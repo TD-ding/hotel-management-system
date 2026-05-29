@@ -10,8 +10,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/rooms?available=1').then(({ data }) => { setFeatured(data.slice(0, 3)); setLoading(false); });
+    api.get('/rooms?available=1&limit=3').then(({ data }) => {
+      const rooms = data.data || data;
+      setFeatured(rooms.slice(0, 3));
+      setLoading(false);
+    });
   }, []);
+
+  const renderStars = (rating) => {
+    if (!rating) return null;
+    const r = Math.round(rating);
+    return <span style={{ color: '#f5a623', fontSize: 12 }}>{'★'.repeat(r)}{'☆'.repeat(5 - r)}</span>;
+  };
 
   return (
     <div>
@@ -34,6 +44,11 @@ export default function Home() {
                 </div>
                 <div style={styles.cardBody}>
                   <h3>{room.name}</h3>
+                  <div style={styles.ratingRow}>
+                    {room.avgRating ? (
+                      <>{renderStars(Number(room.avgRating))} <span style={styles.ratingText}>{room.avgRating}</span> <span style={styles.reviewCount}>({room.reviewCount})</span></>
+                    ) : <span style={styles.noRating}>暂无评价</span>}
+                  </div>
                   <p style={styles.cardDesc}>{room.description}</p>
                   <div style={styles.cardFooter}>
                     <span style={styles.price}>¥{room.price}<small>/晚</small></span>
@@ -80,6 +95,10 @@ const styles = {
   cardImg: { height: 200, background: 'linear-gradient(135deg, #2c3e50, #3498db)', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', padding: 12 },
   cardType: { background: `rgba(230,184,0,0.9)`, color: theme.primary, padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600 },
   cardBody: { padding: 20 },
+  ratingRow: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
+  ratingText: { fontSize: 13, fontWeight: 600, color: '#f5a623' },
+  reviewCount: { fontSize: 12, color: theme.textMuted },
+  noRating: { fontSize: 12, color: theme.textMuted },
   cardDesc: { color: theme.textLight, fontSize: 14, lineHeight: 1.6, margin: '8px 0 16px' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   price: { fontSize: 22, fontWeight: 700, color: theme.accent },

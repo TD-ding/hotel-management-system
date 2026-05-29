@@ -8,6 +8,7 @@ import RoomDetail from './pages/RoomDetail.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import Notifications from './pages/Notifications.jsx';
 import NotFound from './pages/NotFound.jsx';
 import AdminLogin from './admin/AdminLogin.jsx';
 import Dashboard from './admin/Dashboard.jsx';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/admin/rooms" element={<AdminRoute><AdminRooms /></AdminRoute>} />
