@@ -9,9 +9,15 @@
     "seed": "cd server && npm run seed",
     "setup": "cd server && npm install && cd ../client && npm install",
     "build": "cd client && npm run build",
+    "lint": "eslint .",
+    "test": "cd server && npm test",
+    "test:all": "npm run lint && npm run build && npm run test",
     "start": "cd server && npm start"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^8.2.0",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0"
   }
 }

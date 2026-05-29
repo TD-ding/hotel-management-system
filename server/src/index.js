@@ -12,7 +12,6 @@ const reviewRoutes = require('./routes/reviews');
 const exportRoutes = require('./routes/export');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
@@ -56,17 +55,21 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: '服务器内部错误' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
-    app.listen(PORT + 1, () => {
-      console.log(`Server running on http://localhost:${PORT + 1}`);
-    });
-  } else {
-    throw err;
-  }
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3001;
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
+      app.listen(PORT + 1, () => {
+        console.log(`Server running on http://localhost:${PORT + 1}`);
+      });
+    } else {
+      throw err;
+    }
+  });
+}
