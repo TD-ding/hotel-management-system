@@ -1,0 +1,9 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #333; }
+a { text-decoration: none; }
+table { border-spacing: 0; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+th { background: #f8f9fa; font-weight: 600; color: #555; }
+tr:hover { background: #fafafa; }
+button { font-family: inherit; }
+input, select, textarea { font-family: inherit; }
