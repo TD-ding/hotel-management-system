@@ -8,7 +8,7 @@ import { theme, layout } from '../theme';
 import { formatDate } from '../utils';
 
 export default function Profile() {
-  const { user, login } = useAuth();
+  const { user, updateUser } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('bookings');
@@ -34,7 +34,7 @@ export default function Profile() {
     e.preventDefault();
     try {
       const { data } = await api.put('/users/me', editForm);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      updateUser(data.user);
       toast.success('信息更新成功');
     } catch (err) {
       toast.error(err.response?.data?.error || '更新失败');

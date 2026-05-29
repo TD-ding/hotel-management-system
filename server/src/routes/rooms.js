@@ -5,8 +5,10 @@ const { auth, adminOnly } = require('../middleware');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const { type, minPrice, maxPrice, capacity, available, search, page = 1, limit = 50 } = req.query;
-  const offset = (Number(page) - 1) * Number(limit);
+  const { type, minPrice, maxPrice, capacity, available, search } = req.query;
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 50));
+  const offset = (page - 1) * limit;
   let sql = 'SELECT * FROM rooms WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as total FROM rooms WHERE 1=1';
   const params = [];
@@ -20,17 +22,48 @@ router.get('/', (req, res) => {
   if (search) { sql += ' AND name LIKE ?'; countSql += ' AND name LIKE ?'; params.push(`%${search}%`); countParams.push(`%${search}%`); }
 
   const total = db.prepare(countSql).get(...countParams).total;
-  sql += ' ORDER BY price ASC LIMIT ? OFFSET ?';
-  params.push(Number(limit), offset);
 
-  // Add average rating to each room
-  const rooms = db.prepare(sql).all(...params);
-  const roomsWithRating = rooms.map(room => {
-    const avg = db.prepare('SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE room_id = ?').get(room.id);
-    return { ...room, avgRating: avg.avg ? Number(avg.avg).toFixed(1) : null, reviewCount: avg.count };
+  const rooms = db.prepare(
+    `SELECT r.*, COALESCE(rv.avgRating, NULL) as avgRating, COALESCE(rv.reviewCount, 0) as reviewCount
+     FROM (${sql}) r
+     LEFT JOIN (
+       SELECT room_id, ROUND(AVG(rating), 1) as avgRating, COUNT(*) as reviewCount
+       FROM reviews GROUP BY room_id
+     ) rv ON r.id = rv.room_id
+     ORDER BY r.price ASC`
+  ).all(...params);
+
+  res.json({ data: rooms, total, page, limit, totalPages: Math.ceil(total / limit) });
+});
+
+router.get('/:id/booked-dates', (req, res) => {
+  const { month, year } = req.query;
+  const roomId = req.params.id;
+
+  let m = month ? Number(month) : new Date().getMonth() + 1;
+  let y = year ? Number(year) : new Date().getFullYear();
+  const startDate = `${y}-${String(m).padStart(2, '0')}-01`;
+  const nextM = m === 12 ? 1 : m + 1;
+  const nextY = m === 12 ? y + 1 : y;
+  const endDate = `${nextY}-${String(nextM).padStart(2, '0')}-01`;
+
+  const bookings = db.prepare(
+    `SELECT check_in, check_out FROM bookings
+     WHERE room_id = ? AND status != 'cancelled'
+     AND check_out > ? AND check_in < ?
+     ORDER BY check_in`
+  ).all(roomId, startDate, endDate);
+
+  const bookedDates = [];
+  bookings.forEach(b => {
+    const start = new Date(b.check_in + 'T00:00:00');
+    const end = new Date(b.check_out + 'T00:00:00');
+    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+      bookedDates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    }
   });
 
-  res.json({ data: roomsWithRating, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
+  res.json({ bookedDates, month: m, year: y });
 });
 
 router.get('/:id', (req, res) => {
@@ -69,6 +102,8 @@ router.put('/:id', auth, adminOnly, (req, res) => {
 router.delete('/:id', auth, adminOnly, (req, res) => {
   const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id);
   if (!room) return res.status(404).json({ error: '房间不存在' });
+  db.prepare('DELETE FROM reviews WHERE room_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM bookings WHERE room_id = ?').run(req.params.id);
   db.prepare('DELETE FROM rooms WHERE id = ?').run(req.params.id);
   res.json({ message: '房间删除成功' });
 });

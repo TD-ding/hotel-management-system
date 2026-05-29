@@ -23,11 +23,20 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+const { auth, adminOnly } = require('./middleware');
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const upload = multer({
   dest: path.join(__dirname, '..', 'uploads'),
   limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!ALLOWED_TYPES.includes(file.mimetype)) {
+      return cb(new Error('只允许上传图片文件（jpg/png/gif/webp）'), false);
+    }
+    cb(null, true);
+  },
 });
-app.post('/api/upload', upload.single('image'), (req, res) => {
+app.post('/api/upload', auth, adminOnly, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: '请选择图片' });
   const url = `/uploads/${req.file.filename}`;
   res.json({ url });

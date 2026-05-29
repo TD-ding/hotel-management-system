@@ -29,7 +29,7 @@ export default function RoomDetail() {
 
   const loadReviews = () => api.get(`/reviews/room/${id}`).then(({ data }) => setReviews(data));
   const loadCalendar = () => {
-    api.get(`/notifications/room/${id}`, { params: { month: calMonth.m, year: calMonth.y } })
+    api.get(`/rooms/${id}/booked-dates`, { params: { month: calMonth.m, year: calMonth.y } })
       .then(({ data }) => setBookedDates(data.bookedDates || []));
   };
   useEffect(loadCalendar, [calMonth]);

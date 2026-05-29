@@ -11,6 +11,8 @@ router.get('/', auth, adminOnly, (req, res) => {
   const totalBookings = db.prepare('SELECT COUNT(*) as count FROM bookings').get().count;
   const pendingBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = ?').get('pending').count;
   const confirmedBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = ?').get('confirmed').count;
+  const checkedInBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = ?').get('checked_in').count;
+  const checkedOutBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = ?').get('checked_out').count;
   const cancelledBookings = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE status = ?').get('cancelled').count;
   const totalRevenue = db.prepare("SELECT COALESCE(SUM(total_price), 0) as sum FROM bookings WHERE status != 'cancelled'").get().sum;
 
@@ -28,7 +30,7 @@ router.get('/', auth, adminOnly, (req, res) => {
 
   res.json({
     totalUsers, totalRooms, availableRooms,
-    totalBookings, pendingBookings, confirmedBookings, cancelledBookings,
+    totalBookings, pendingBookings, confirmedBookings, checkedInBookings, checkedOutBookings, cancelledBookings,
     totalRevenue, revenueByType, recentBookings
   });
 });
