@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import { useAuth } from '../auth.jsx';
 import { useToast } from '../components/Toast.jsx';
 import Loading from '../components/Loading.jsx';
 import { theme, layout } from '../theme';
 
 export default function Notifications() {
-  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();

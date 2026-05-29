@@ -16,7 +16,7 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'eqeqeq': ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
@@ -38,6 +38,13 @@ export default [
     files: ['server/src/**/*.js'],
     languageOptions: {
       globals: { ...globals.node },
+      sourceType: 'commonjs',
+    },
+  },
+  {
+    files: ['server/tests/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.jest },
       sourceType: 'commonjs',
     },
   },

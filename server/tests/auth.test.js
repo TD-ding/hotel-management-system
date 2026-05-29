@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { createTestDb, seedTestDb, cleanupDb, adminAuth, userAuth, mockGetDb } = require('./setup');
+const { createTestDb, seedTestDb, cleanupDb, adminAuth, mockGetDb } = require('./setup');
 
 jest.mock('../src/db', () => mockGetDb());
 

@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
   const { type, minPrice, maxPrice, capacity, available, search } = req.query;
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 50));
-  const offset = (page - 1) * limit;
+
   let sql = 'SELECT * FROM rooms WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as total FROM rooms WHERE 1=1';
   const params = [];
@@ -40,8 +40,8 @@ router.get('/:id/booked-dates', (req, res) => {
   const { month, year } = req.query;
   const roomId = req.params.id;
 
-  let m = month ? Number(month) : new Date().getMonth() + 1;
-  let y = year ? Number(year) : new Date().getFullYear();
+  const m = month ? Number(month) : new Date().getMonth() + 1;
+  const y = year ? Number(year) : new Date().getFullYear();
   const startDate = `${y}-${String(m).padStart(2, '0')}-01`;
   const nextM = m === 12 ? 1 : m + 1;
   const nextY = m === 12 ? y + 1 : y;
