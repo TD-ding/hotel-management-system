@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { typeLabel } from '../constants';
+import { theme, layout } from '../theme';
 
 export default function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -58,36 +60,31 @@ export default function Rooms() {
           </div>
         ))}
       </div>
-      {rooms.length === 0 && <p style={styles.empty}>暂无符合条件的房间</p>}
+      {rooms.length === 0 && <p style={styles.empty}>暂无符合条件的���间</p>}
     </div>
   );
 }
 
-function typeLabel(type) {
-  const map = { standard: '标准', deluxe: '豪华', suite: '套房', presidential: '总统套房', family: '家庭', business: '商务' };
-  return map[type] || type;
-}
-
 const styles = {
-  page: { maxWidth: 1200, margin: '0 auto', padding: '30px 20px' },
+  page: { maxWidth: layout.maxWidth, margin: '0 auto', padding: layout.pagePadding },
   header: { marginBottom: 30 },
-  title: { fontSize: 32, fontWeight: 700, color: '#1a1a2e', margin: '0 0 20px' },
+  title: { fontSize: 32, fontWeight: 700, color: theme.primary, margin: '0 0 20px' },
   filterBar: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
-  filterBtn: { padding: '6px 14px', border: '1px solid #ddd', background: '#fff', borderRadius: 4, cursor: 'pointer', fontSize: 13, color: '#666' },
-  activeFilter: { padding: '6px 14px', border: '1px solid #e6b800', background: '#e6b800', borderRadius: 4, cursor: 'pointer', fontSize: 13, color: '#1a1a2e', fontWeight: 600 },
-  input: { padding: '6px 10px', border: '1px solid #ddd', borderRadius: 4, width: 80, fontSize: 13 },
+  filterBtn: { padding: '6px 14px', border: `1px solid ${theme.border}`, background: theme.white, borderRadius: 4, cursor: 'pointer', fontSize: 13, color: theme.textLight },
+  activeFilter: { padding: '6px 14px', border: `1px solid ${theme.accent}`, background: theme.accent, borderRadius: 4, cursor: 'pointer', fontSize: 13, color: theme.primary, fontWeight: 600 },
+  input: { padding: '6px 10px', border: `1px solid ${theme.border}`, borderRadius: 4, width: 80, fontSize: 13 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 },
-  card: { background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
+  card: { background: theme.white, borderRadius: 8, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
   cardImg: { height: 180, background: 'linear-gradient(135deg, #2c3e50, #3498db)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: 12 },
-  badge: { background: '#e6b800', color: '#1a1a2e', padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600 },
+  badge: { background: theme.accent, color: theme.primary, padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600 },
   capacityBadge: { background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '4px 10px', borderRadius: 4, fontSize: 12 },
   cardBody: { padding: 16 },
   cardTitle: { fontSize: 18, fontWeight: 600, margin: 0 },
-  desc: { color: '#666', fontSize: 14, lineHeight: 1.5, margin: '8px 0' },
+  desc: { color: theme.textLight, fontSize: 14, lineHeight: 1.5, margin: '8px 0' },
   amenities: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 },
   amenity: { background: '#f0f0f0', padding: '2px 8px', borderRadius: 3, fontSize: 12, color: '#555' },
   footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  price: { fontSize: 22, fontWeight: 700, color: '#e6b800' },
-  btn: { padding: '8px 24px', background: '#e6b800', color: '#1a1a2e', borderRadius: 4, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
-  empty: { textAlign: 'center', color: '#999', fontSize: 16, padding: 40 },
+  price: { fontSize: 22, fontWeight: 700, color: theme.accent },
+  btn: { padding: '8px 24px', background: theme.accent, color: theme.primary, borderRadius: 4, textDecoration: 'none', fontWeight: 600, fontSize: 14 },
+  empty: { textAlign: 'center', color: theme.textMuted, fontSize: 16, padding: 40 },
 };

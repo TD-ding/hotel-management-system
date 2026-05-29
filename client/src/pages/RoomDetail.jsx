@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../auth.jsx';
+import { typeLabel } from '../constants';
+import { theme, layout } from '../theme';
 
 export default function RoomDetail() {
   const { id } = useParams();
@@ -78,36 +80,31 @@ export default function RoomDetail() {
   );
 }
 
-function typeLabel(type) {
-  const map = { standard: '标准', deluxe: '豪华', suite: '套房', presidential: '总统套房', family: '家庭', business: '商务' };
-  return map[type] || type;
-}
-
 const styles = {
-  page: { maxWidth: 1200, margin: '0 auto', padding: '30px 20px' },
+  page: { maxWidth: layout.maxWidth, margin: '0 auto', padding: layout.pagePadding },
   layout: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 30 },
   main: {},
   imgArea: { height: 320, background: 'linear-gradient(135deg, #2c3e50, #3498db)', borderRadius: 8, position: 'relative', marginBottom: 24 },
-  typeBadge: { position: 'absolute', top: 12, left: 12, background: '#e6b800', color: '#1a1a2e', padding: '4px 12px', borderRadius: 4, fontWeight: 600, fontSize: 13 },
-  name: { fontSize: 28, fontWeight: 700, color: '#1a1a2e', margin: 0 },
-  desc: { color: '#666', lineHeight: 1.8, fontSize: 15, margin: '12px 0 24px' },
+  typeBadge: { position: 'absolute', top: 12, left: 12, background: theme.accent, color: theme.primary, padding: '4px 12px', borderRadius: 4, fontWeight: 600, fontSize: 13 },
+  name: { fontSize: 28, fontWeight: 700, color: theme.primary, margin: 0 },
+  desc: { color: theme.textLight, lineHeight: 1.8, fontSize: 15, margin: '12px 0 24px' },
   amenities: { marginBottom: 24 },
   amenityGrid: { display: 'flex', gap: 8, flexWrap: 'wrap' },
   amenity: { background: '#f0f0f0', padding: '6px 14px', borderRadius: 4, fontSize: 13, color: '#555' },
   infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  infoItem: { background: '#f8f9fa', padding: 14, borderRadius: 6 },
-  infoLabel: { display: 'block', fontSize: 12, color: '#999', marginBottom: 4 },
-  priceText: { color: '#e6b800', fontWeight: 700 },
-  available: { color: '#27ae60', fontWeight: 600 },
-  unavailable: { color: '#e74c3c', fontWeight: 600 },
+  infoItem: { background: theme.bg, padding: 14, borderRadius: 6 },
+  infoLabel: { display: 'block', fontSize: 12, color: theme.textMuted, marginBottom: 4 },
+  priceText: { color: theme.accent, fontWeight: 700 },
+  available: { color: theme.success, fontWeight: 600 },
+  unavailable: { color: theme.danger, fontWeight: 600 },
   sidebar: {},
-  bookingCard: { background: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', position: 'sticky', top: 84 },
+  bookingCard: { background: theme.white, padding: 24, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', position: 'sticky', top: 84 },
   bookingTitle: { margin: '0 0 8px', fontSize: 18, fontWeight: 600 },
-  priceBig: { fontSize: 32, fontWeight: 700, color: '#e6b800', marginBottom: 20 },
-  label: { display: 'block', fontSize: 13, color: '#666', marginBottom: 4, marginTop: 12 },
-  input: { width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
-  bookBtn: { width: '100%', padding: '12px', background: '#e6b800', color: '#1a1a2e', border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 20 },
-  success: { color: '#27ae60', marginTop: 12, fontSize: 14 },
-  error: { color: '#e74c3c', marginTop: 12, fontSize: 14 },
-  loading: { textAlign: 'center', padding: 60, color: '#999' },
+  priceBig: { fontSize: 32, fontWeight: 700, color: theme.accent, marginBottom: 20 },
+  label: { display: 'block', fontSize: 13, color: theme.textLight, marginBottom: 4, marginTop: 12 },
+  input: { width: '100%', padding: '8px 12px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
+  bookBtn: { width: '100%', padding: '12px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 20 },
+  success: { color: theme.success, marginTop: 12, fontSize: 14 },
+  error: { color: theme.danger, marginTop: 12, fontSize: 14 },
+  loading: { textAlign: 'center', padding: 60, color: theme.textMuted },
 };

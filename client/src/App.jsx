@@ -8,6 +8,7 @@ import RoomDetail from './pages/RoomDetail.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import NotFound from './pages/NotFound.jsx';
 import AdminLogin from './admin/AdminLogin.jsx';
 import Dashboard from './admin/Dashboard.jsx';
 import AdminRooms from './admin/AdminRooms.jsx';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/admin/rooms" element={<AdminRoute><AdminRooms /></AdminRoute>} />
         <Route path="/admin/bookings" element={<AdminRoute><AdminBookings /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
