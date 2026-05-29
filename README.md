@@ -84,7 +84,7 @@ npm run dev
 │   │       ├── bookings.js # 预订管理（权限控制、入住/退房状态、通知推送）
 │   │       ├── users.js    # 用户管理（含搜索分页、个人信息修改、密码修改）
 │   │       ├── stats.js    # 统计数据
-│   │       ├── notifications.js # 通知（日历已订日期、站内消息）
+│   │       ├── notifications.js # 通知（站内消息）
 │   │       ├── reviews.js  # 房间评价（评分+评语，一人一间限一次）
 │   │       └── export.js   # CSV 数据导出
 ├── client/                 # 前端
@@ -111,7 +111,11 @@ npm run dev
 - bcrypt 异步加密，不阻塞事件循环
 - 预订确认/入住/退房仅管理员可操作，普通用户只能取消自己的预订
 - 修改预订日期时自动检查冲突
-- 图片上传限制 5MB
+- 图片上传限制 5MB，仅允许 jpg/png/gif/webp 格式，仅管理员可上传
+- 评价仅限有有效预订的用户
+- CSV 导出支持 query param token 鉴权
+- 删除房间/用户时级联删除关联数据（预订、评价、通知）
+- 分页参数校验（page >= 1, limit 1-100）
 
 ## 用户体验
 
@@ -136,6 +140,7 @@ npm run dev
 
 ### 房间
 - `GET /api/rooms` — 房间列表（支持 type/minPrice/maxPrice/search/page/limit 筛选分页，含评分统计）
+- `GET /api/rooms/:id/booked-dates` — 房间已订日期日历（支持 month/year 查询参数）
 - `GET /api/rooms/:id` — 房间详情（含评分统计）
 - `POST /api/rooms` — 创建房间（管理员）
 - `PUT /api/rooms/:id` — 更新房间（管理员）
@@ -149,7 +154,6 @@ npm run dev
 - `DELETE /api/bookings/:id` — 删除预订（管理员）
 
 ### 通知
-- `GET /api/notifications/room/:roomId` — 房间已订日期日历
 - `GET /api/notifications/my` — 我的通知列表
 - `GET /api/notifications/my/unread` — 未读通知数
 - `PUT /api/notifications/my/read` — 全部标记已读
@@ -157,7 +161,7 @@ npm run dev
 
 ### 评价
 - `GET /api/reviews/room/:roomId` — 房间评价列表（含平均评分）
-- `POST /api/reviews` — 提交评价（需登录，每人每房间限一次）
+- `POST /api/reviews` — 提交评价（需登录且有有效预订，每人每房间限一次）
 
 ### 用户管理
 - `GET /api/users` — 用户列表（管理员，支持 search/page/limit 搜索分页）

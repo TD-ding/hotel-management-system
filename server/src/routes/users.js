@@ -5,8 +5,10 @@ const { auth, adminOnly } = require('../middleware');
 const router = express.Router();
 
 router.get('/', auth, adminOnly, (req, res) => {
-  const { search, page = 1, limit = 20 } = req.query;
-  const offset = (Number(page) - 1) * Number(limit);
+  const { search } = req.query;
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 20));
+  const offset = (page - 1) * limit;
   let sql = 'SELECT id, username, email, role, created_at FROM users WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as total FROM users WHERE 1=1';
   const params = [];
@@ -23,7 +25,7 @@ router.get('/', auth, adminOnly, (req, res) => {
   sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
   params.push(Number(limit), offset);
 
-  res.json({ data: db.prepare(sql).all(...params), total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
+  res.json({ data: db.prepare(sql).all(...params), total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 router.put('/me', auth, async (req, res) => {
@@ -78,6 +80,8 @@ router.delete('/:id', auth, adminOnly, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).json({ error: '用户不存在' });
   if (user.role === 'admin') return res.status(403).json({ error: '无法删除管理员账户' });
+  db.prepare('DELETE FROM notifications WHERE user_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM reviews WHERE user_id = ?').run(req.params.id);
   db.prepare('DELETE FROM bookings WHERE user_id = ?').run(req.params.id);
   db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
   res.json({ message: '用户删除成功' });

@@ -7,8 +7,10 @@ const router = express.Router();
 const VALID_STATUSES = ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'];
 
 router.get('/', auth, adminOnly, (req, res) => {
-  const { status, search, page = 1, limit = 20 } = req.query;
-  const offset = (Number(page) - 1) * Number(limit);
+  const { status, search } = req.query;
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 20));
+  const offset = (page - 1) * limit;
   let sql = `SELECT b.*, u.username, r.name as room_name, r.type as room_type
     FROM bookings b JOIN users u ON b.user_id = u.id JOIN rooms r ON b.room_id = r.id WHERE 1=1`;
   let countSql = `SELECT COUNT(*) as total FROM bookings b JOIN users u ON b.user_id = u.id JOIN rooms r ON b.room_id = r.id WHERE 1=1`;
@@ -27,7 +29,7 @@ router.get('/', auth, adminOnly, (req, res) => {
   sql += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
   params.push(Number(limit), offset);
 
-  res.json({ data: db.prepare(sql).all(...params), total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) });
+  res.json({ data: db.prepare(sql).all(...params), total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 router.get('/my', auth, (req, res) => {

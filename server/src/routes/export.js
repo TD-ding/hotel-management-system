@@ -1,10 +1,23 @@
 const express = require('express');
 const db = require('../db');
-const { auth, adminOnly } = require('../middleware');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../middleware');
 
 const router = express.Router();
 
-router.get('/bookings', auth, adminOnly, (req, res) => {
+function exportAuth(req, res, next) {
+  const token = req.query.token || req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: '未提供认证令牌' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    if (req.user.role !== 'admin') return res.status(403).json({ error: '需要管理员权限' });
+    next();
+  } catch {
+    res.status(401).json({ error: '令牌无效或已过期' });
+  }
+}
+
+router.get('/bookings', exportAuth, (req, res) => {
   const { status, search } = req.query;
   let sql = `SELECT b.*, u.username, r.name as room_name
     FROM bookings b JOIN users u ON b.user_id = u.id JOIN rooms r ON b.room_id = r.id WHERE 1=1`;
@@ -22,7 +35,7 @@ router.get('/bookings', auth, adminOnly, (req, res) => {
   res.end();
 });
 
-router.get('/users', auth, adminOnly, (req, res) => {
+router.get('/users', exportAuth, (req, res) => {
   const rows = db.prepare('SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC').all();
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
@@ -31,7 +44,7 @@ router.get('/users', auth, adminOnly, (req, res) => {
   res.end();
 });
 
-router.get('/rooms', auth, adminOnly, (req, res) => {
+router.get('/rooms', exportAuth, (req, res) => {
   const rows = db.prepare('SELECT * FROM rooms ORDER BY id').all();
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename=rooms.csv');

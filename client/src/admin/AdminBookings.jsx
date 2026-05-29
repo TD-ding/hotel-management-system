@@ -27,7 +27,7 @@ export default function AdminBookings() {
       setLoading(false);
     });
   };
-  useEffect(load, [filter, page]);
+  useEffect(load, [filter, search, page]);
 
   const handleStatus = async (id, status) => {
     try {

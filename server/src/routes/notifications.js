@@ -4,43 +4,6 @@ const { auth, adminOnly } = require('../middleware');
 
 const router = express.Router();
 
-router.get('/room/:roomId', (req, res) => {
-  const { month, year } = req.query;
-  const roomId = req.params.roomId;
-
-  let startDate, endDate;
-  if (month && year) {
-    startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const nextMonth = Number(month) === 12 ? 1 : Number(month) + 1;
-    const nextYear = Number(month) === 12 ? Number(year) + 1 : Number(year);
-    endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
-  } else {
-    const now = new Date();
-    startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const nextMonth = now.getMonth() === 11 ? 0 : now.getMonth() + 1;
-    const nextYear = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
-    endDate = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-01`;
-  }
-
-  const bookings = db.prepare(
-    `SELECT check_in, check_out FROM bookings
-     WHERE room_id = ? AND status != 'cancelled'
-     AND check_out > ? AND check_in < ?
-     ORDER BY check_in`
-  ).all(roomId, startDate, endDate);
-
-  const bookedDates = [];
-  bookings.forEach(b => {
-    const start = new Date(b.check_in);
-    const end = new Date(b.check_out);
-    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-      bookedDates.push(d.toISOString().split('T')[0]);
-    }
-  });
-
-  res.json({ bookedDates, month: Number(month) || new Date().getMonth() + 1, year: Number(year) || new Date().getFullYear() });
-});
-
 router.get('/my', auth, (req, res) => {
   const notifications = db.prepare(
     'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC'
