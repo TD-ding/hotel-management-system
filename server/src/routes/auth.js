@@ -30,7 +30,7 @@ router.post('/register', rateLimit({ windowMs: 60 * 1000, max: 5 }), async (req,
 
     const token = jwt.sign({ id: result.lastInsertRowid, username, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user: { id: result.lastInsertRowid, username, email, role: 'user' } });
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: '注册失败，请稍后再试' });
   }
 });

@@ -1,5 +1,4 @@
 import { useState, useCallback, createContext, useContext } from 'react';
-import { theme } from '../theme';
 
 const ToastContext = createContext(null);
 

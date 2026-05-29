@@ -1,0 +1,17 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  verify-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build server image
+        run: docker build -f server.Dockerfile -t hotel-server ./server
+
+      - name: Build client image
+        run: docker build -f client.Dockerfile -t hotel-client ./client

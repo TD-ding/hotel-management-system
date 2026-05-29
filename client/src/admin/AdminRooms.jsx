@@ -71,7 +71,7 @@ export default function AdminRooms() {
       const { data } = await api.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setForm(f => ({ ...f, image: data.url }));
       toast.success('图片上传成功');
-    } catch (err) {
+    } catch (_err) {
       toast.error('图片上传失败');
     } finally {
       setUploading(false);
