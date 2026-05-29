@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import Loading from '../components/Loading.jsx';
 import { typeLabel, statusLabel, statusBadgeStyle } from '../constants';
 import { theme, layout } from '../theme';
+import { formatDate } from '../utils';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -11,12 +13,12 @@ export default function Dashboard() {
     api.get('/stats').then(({ data }) => setStats(data));
   }, []);
 
-  if (!stats) return <div style={styles.loading}>加载中...</div>;
+  if (!stats) return <Loading />;
 
   return (
     <div style={styles.page}>
       <h1 style={styles.title}>管理面板</h1>
-      <div style={styles.grid}>
+      <div className="stat-grid" style={styles.grid}>
         <StatCard label="总用户" value={stats.totalUsers} icon="👥" color={theme.info} />
         <StatCard label="总房间" value={stats.totalRooms} icon="🏨" color="#2ecc71" />
         <StatCard label="可用房间" value={stats.availableRooms} icon="✅" color={theme.success} />
@@ -25,7 +27,7 @@ export default function Dashboard() {
         <StatCard label="总收入" value={`¥${stats.totalRevenue.toLocaleString()}`} icon="💰" color={theme.accent} />
       </div>
 
-      <div style={styles.row}>
+      <div className="stats-row" style={styles.row}>
         <div style={styles.half}>
           <h3 style={styles.subTitle}>预订统计</h3>
           <div style={styles.barRow}>
@@ -47,20 +49,22 @@ export default function Dashboard() {
       </div>
 
       <h3 style={styles.subTitle}>最近预订</h3>
-      <table style={styles.table}>
-        <thead>
-          <tr><th>用户</th><th>房间</th><th>入住</th><th>退房</th><th>金额</th><th>状态</th></tr>
-        </thead>
-        <tbody>
-          {stats.recentBookings.map(b => (
-            <tr key={b.id}>
-              <td>{b.username}</td><td>{b.room_name}</td><td>{b.check_in}</td><td>{b.check_out}</td>
-              <td style={{ color: theme.accent, fontWeight: 600 }}>¥{b.total_price}</td>
-              <td><span style={statusBadgeStyle(b.status)}>{statusLabel(b.status)}</span></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-wrap">
+        <table style={styles.table}>
+          <thead>
+            <tr><th>用户</th><th>房间</th><th>入住</th><th>退房</th><th>金额</th><th>状态</th></tr>
+          </thead>
+          <tbody>
+            {stats.recentBookings.map(b => (
+              <tr key={b.id}>
+                <td>{b.username}</td><td>{b.room_name}</td><td>{formatDate(b.check_in)}</td><td>{formatDate(b.check_out)}</td>
+                <td style={{ color: theme.accent, fontWeight: 600 }}>¥{b.total_price}</td>
+                <td><span style={statusBadgeStyle(b.status)}>{statusLabel(b.status)}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div style={styles.quickLinks}>
         <Link to="/admin/rooms" style={styles.qlBtn}>管理房间</Link>
@@ -109,7 +113,6 @@ const styles = {
   barValue: { width: 30, fontSize: 13, fontWeight: 600 },
   revRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
   table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 20 },
-  quickLinks: { display: 'flex', gap: 12 },
+  quickLinks: { display: 'flex', gap: 12, flexWrap: 'wrap' },
   qlBtn: { padding: '10px 24px', background: theme.primary, color: theme.accent, borderRadius: 4, textDecoration: 'none', fontWeight: 600 },
-  loading: { textAlign: 'center', padding: 60, color: theme.textMuted },
 };

@@ -1,30 +1,37 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import { useToast } from '../components/Toast.jsx';
 import { theme } from '../theme';
 
 export default function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '' });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (form.password !== form.confirm) { setError('两次密码不一致'); return; }
     if (form.password.length < 6) { setError('密码至少6位'); return; }
+    setLoading(true);
     try {
       await register(form.username, form.email, form.password);
+      toast.success('注册成功');
       navigate('/profile');
     } catch (err) {
       setError(err.response?.data?.error || '注册失败');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
+      <div className="auth-card" style={styles.card}>
         <h2 style={styles.title}>用户注册</h2>
         <form onSubmit={handleSubmit}>
           <label style={styles.label}>用户名</label>
@@ -36,7 +43,7 @@ export default function Register() {
           <label style={styles.label}>确认密码</label>
           <input type="password" required value={form.confirm} onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))} style={styles.input} />
           {error && <p style={styles.error}>{error}</p>}
-          <button type="submit" style={styles.btn}>注册</button>
+          <button type="submit" style={styles.btn} disabled={loading}>{loading ? '注册中...' : '注册'}</button>
         </form>
         <p style={styles.footer}>已有账号？<Link to="/login" style={styles.link}>立即登录</Link></p>
       </div>
@@ -45,8 +52,8 @@ export default function Register() {
 }
 
 const styles = {
-  page: { minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg },
-  card: { background: theme.white, padding: 40, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400 },
+  page: { minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg, padding: 20 },
+  card: { background: theme.white, padding: 40, borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400, maxWidth: '100%' },
   title: { margin: '0 0 24px', textAlign: 'center', fontSize: 24, fontWeight: 600, color: theme.primary },
   label: { display: 'block', fontSize: 13, color: theme.textLight, marginBottom: 4, marginTop: 14 },
   input: { width: '100%', padding: '10px 12px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },

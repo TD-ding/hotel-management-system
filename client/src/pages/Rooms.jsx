@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import Loading from '../components/Loading.jsx';
 import { typeLabel } from '../constants';
 import { theme, layout } from '../theme';
 
 export default function Rooms() {
   const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ type: '', minPrice: '', maxPrice: '' });
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export default function Rooms() {
     if (filters.minPrice) params.minPrice = filters.minPrice;
     if (filters.maxPrice) params.maxPrice = filters.maxPrice;
     params.available = 1;
-    api.get('/rooms', { params }).then(({ data }) => setRooms(data));
+    api.get('/rooms', { params }).then(({ data }) => { setRooms(data); setLoading(false); });
   }, [filters]);
 
   const types = ['all', 'standard', 'deluxe', 'suite', 'presidential', 'family', 'business'];
@@ -37,30 +39,34 @@ export default function Rooms() {
           <input type="number" placeholder="最高价" value={filters.maxPrice} onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} style={styles.input} />
         </div>
       </div>
-      <div style={styles.grid}>
-        {rooms.map(room => (
-          <div key={room.id} style={styles.card}>
-            <div style={styles.cardImg}>
-              <span style={styles.badge}>{typeLabel(room.type)}</span>
-              <span style={styles.capacityBadge}>{room.capacity}人</span>
-            </div>
-            <div style={styles.cardBody}>
-              <h3 style={styles.cardTitle}>{room.name}</h3>
-              <p style={styles.desc}>{room.description}</p>
-              <div style={styles.amenities}>
-                {room.amenities?.split(',').slice(0, 4).map(a => (
-                  <span key={a} style={styles.amenity}>{a}</span>
-                ))}
+      {loading ? <Loading /> : (
+        <>
+          <div style={styles.grid}>
+            {rooms.map(room => (
+              <div key={room.id} className="room-card" style={styles.card}>
+                <div style={room.image ? { ...styles.cardImg, backgroundImage: `url(${room.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : styles.cardImg}>
+                  <span style={styles.badge}>{typeLabel(room.type)}</span>
+                  <span style={styles.capacityBadge}>{room.capacity}人</span>
+                </div>
+                <div style={styles.cardBody}>
+                  <h3 style={styles.cardTitle}>{room.name}</h3>
+                  <p style={styles.desc}>{room.description}</p>
+                  <div style={styles.amenities}>
+                    {room.amenities?.split(',').slice(0, 4).map(a => (
+                      <span key={a} style={styles.amenity}>{a}</span>
+                    ))}
+                  </div>
+                  <div style={styles.footer}>
+                    <span style={styles.price}>¥{room.price}<small>/晚</small></span>
+                    <Link to={`/rooms/${room.id}`} style={styles.btn}>预订</Link>
+                  </div>
+                </div>
               </div>
-              <div style={styles.footer}>
-                <span style={styles.price}>¥{room.price}<small>/晚</small></span>
-                <Link to={`/rooms/${room.id}`} style={styles.btn}>预订</Link>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {rooms.length === 0 && <p style={styles.empty}>暂无符合条件的���间</p>}
+          {rooms.length === 0 && <p style={styles.empty}>暂无符合条件的房间</p>}
+        </>
+      )}
     </div>
   );
 }

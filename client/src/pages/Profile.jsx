@@ -1,23 +1,33 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import { useAuth } from '../auth.jsx';
+import { useToast } from '../components/Toast.jsx';
+import Loading from '../components/Loading.jsx';
 import { statusLabel, statusBadgeStyle } from '../constants';
 import { theme, layout } from '../theme';
+import { formatDate } from '../utils';
 
 export default function Profile() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
-    api.get('/bookings/my').then(({ data }) => setBookings(data));
+    api.get('/bookings/my').then(({ data }) => { setBookings(data); setLoading(false); });
   }, []);
 
   const handleCancel = async (id) => {
     try {
       await api.put(`/bookings/${id}`, { status: 'cancelled' });
       setBookings(bs => bs.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
-    } catch {}
+      toast.success('预订已取消');
+    } catch (err) {
+      toast.error(err.response?.data?.error || '取消失败');
+    }
   };
+
+  if (loading) return <Loading />;
 
   return (
     <div style={styles.page}>
@@ -36,7 +46,7 @@ export default function Profile() {
                 <span style={statusBadgeStyle(b.status)}>{statusLabel(b.status)}</span>
               </div>
               <div style={styles.cardBody}>
-                <p>入住：{b.check_in} ~ 退房：{b.check_out}</p>
+                <p>入住：{formatDate(b.check_in)} ~ 退房：{formatDate(b.check_out)}</p>
                 <p>人数：{b.guests}人 | 总价：<strong style={{ color: theme.accent }}>¥{b.total_price}</strong></p>
               </div>
               {b.status !== 'cancelled' && b.status !== 'confirmed' && (

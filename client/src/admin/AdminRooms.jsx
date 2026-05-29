@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { useToast } from '../components/Toast.jsx';
+import Loading from '../components/Loading.jsx';
 import { typeLabel } from '../constants';
 import { theme, layout } from '../theme';
 
@@ -11,8 +13,10 @@ export default function AdminRooms() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyRoom);
   const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
-  const load = () => api.get('/rooms').then(({ data }) => setRooms(data));
+  const load = () => api.get('/rooms').then(({ data }) => { setRooms(data); setLoading(false); });
   useEffect(load, []);
 
   const reset = () => { setForm(emptyRoom); setEditing(null); setMsg(''); };
@@ -23,13 +27,13 @@ export default function AdminRooms() {
     try {
       if (editing) {
         await api.put(`/rooms/${editing}`, form);
-        setMsg('更新成功');
+        toast.success('房间更新成功');
       } else {
         await api.post('/rooms', { ...form, price: Number(form.price), capacity: Number(form.capacity) });
-        setMsg('创建成功');
+        toast.success('房间创建成功');
       }
       reset(); load();
-    } catch (err) { setMsg(err.response?.data?.error || '操作失败'); }
+    } catch (err) { toast.error(err.response?.data?.error || '操作失败'); }
   };
 
   const handleEdit = (room) => {
@@ -40,7 +44,11 @@ export default function AdminRooms() {
 
   const handleDelete = async (id) => {
     if (!confirm('确定删除此房间？')) return;
-    await api.delete(`/rooms/${id}`); load();
+    try {
+      await api.delete(`/rooms/${id}`);
+      toast.success('房间已删除');
+      load();
+    } catch (err) { toast.error(err.response?.data?.error || '删除失败'); }
   };
 
   return (
@@ -74,25 +82,28 @@ export default function AdminRooms() {
             {editing && <button type="button" onClick={reset} style={styles.cancelBtn}>取消</button>}
           </div>
         </form>
-        {msg && <p style={styles.msg}>{msg}</p>}
       </div>
 
-      <table style={styles.table}>
-        <thead><tr><th>ID</th><th>名称</th><th>类型</th><th>价格</th><th>容量</th><th>状态</th><th>操作</th></tr></thead>
-        <tbody>
-          {rooms.map(r => (
-            <tr key={r.id}>
-              <td>{r.id}</td><td>{r.name}</td><td>{typeLabel(r.type)}</td>
-              <td>¥{r.price}</td><td>{r.capacity}人</td>
-              <td>{r.available ? '✅' : '❌'}</td>
-              <td>
-                <button onClick={() => handleEdit(r)} style={styles.editBtn}>编辑</button>
-                <button onClick={() => handleDelete(r.id)} style={styles.delBtn}>删除</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {loading ? <Loading /> : (
+        <div className="table-wrap">
+          <table style={styles.table}>
+            <thead><tr><th>ID</th><th>名称</th><th>类型</th><th>价格</th><th>容量</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody>
+              {rooms.map(r => (
+                <tr key={r.id}>
+                  <td>{r.id}</td><td>{r.name}</td><td>{typeLabel(r.type)}</td>
+                  <td>¥{r.price}</td><td>{r.capacity}人</td>
+                  <td>{r.available ? '✅' : '❌'}</td>
+                  <td>
+                    <button onClick={() => handleEdit(r)} style={styles.editBtn}>编辑</button>
+                    <button onClick={() => handleDelete(r.id)} style={styles.delBtn}>删除</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -109,7 +120,6 @@ const styles = {
   input: { width: '100%', padding: '8px 10px', border: `1px solid ${theme.border}`, borderRadius: 4, fontSize: 14, boxSizing: 'border-box' },
   btn: { padding: '8px 20px', background: theme.accent, color: theme.primary, border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 },
   cancelBtn: { padding: '8px 16px', background: theme.white, color: theme.textLight, border: `1px solid ${theme.border}`, borderRadius: 4, cursor: 'pointer' },
-  msg: { color: theme.success, fontSize: 14, marginTop: 8 },
   table: { width: '100%', borderCollapse: 'collapse', background: theme.white, borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   editBtn: { padding: '4px 10px', background: theme.info, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', marginRight: 4, fontSize: 12 },
   delBtn: { padding: '4px 10px', background: theme.danger, color: '#fff', border: 'none', borderRadius: 3, cursor: 'pointer', fontSize: 12 },
